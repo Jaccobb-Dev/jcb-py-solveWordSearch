@@ -1,10 +1,135 @@
-import os, random
-os.system('clear')
+import random, os
 
-width = 10
-height = 10
+os.system('cls')
 
-wsr1 = [
+class wordSeachSolver:
+
+    def __init__(self):
+
+        colors = [
+            '\033[95m',
+            '\033[94m',
+            '\033[93m',
+            '\033[92m',
+            '\033[91m'
+        ]
+
+        self.clearColor = '\033[0m'
+        self.selectedColor = random.choice(colors)
+
+        self.slopes = [
+            [0,  -1],
+            [0,   1],
+            [-1,  0],
+            [1,   0],
+            [-1,  1],
+            [1,  -1],
+            [-1, -1],
+            [1,   1]
+        ]
+
+        self.slopeDirections = [
+            'up',
+            'down',
+            'left',
+            'right',
+            'left and down',
+            'right and up',
+            'left and up',
+            'right and down'
+        ]
+
+        self.algorithms = [
+            'slope',
+            'random'
+        ]
+
+        self.algorithmFunctions = [
+            self.slopeSolve,
+            self.randomSolve
+        ]
+
+    def solve(self, rows, words, algorithm = 0):
+
+        # Determine Algorithm
+        if algorithm != 0: 
+            algorithm = self.algorithms.index(algorithm)
+        algorithmFunction = self.algorithmFunctions[
+            algorithm]
+
+        # Convert Rows to Map
+        map = []
+        for row in rows:
+            splitRow = list(row.lower())
+            finalList = []
+            for char in splitRow:
+                finalList.append([char, False])
+            map.append(finalList)
+
+        # Ensure Words are Lowercase
+        for word in words:
+            words[words.index(word)] = word.lower()
+
+        # Run Selected Algorithm
+        solvedPuzzle, wordCoordinates = algorithmFunction(map, words)
+
+        # Display Solved Puzzle
+        self.printSolvedPuzzle(solvedPuzzle, wordCoordinates)
+
+    def printSolvedPuzzle(self, solvedPuzzle, wordCoordinates):
+
+        for y in range(len(solvedPuzzle)):
+            row = ''
+            for x in range(len(solvedPuzzle[1])):
+                color = self.clearColor
+                if solvedPuzzle[y][x][1] == True: color = self.selectedColor
+                row += color + solvedPuzzle[y][x][0] + color + '  '
+            print(row)
+
+        for wordData in wordCoordinates:
+            try:
+                word, slope, x, y = wordData
+                print(f'{word} is at {x}, {y} pointing {self.slopeDirections[self.slopes.index(slope)]}')
+            except: print(f'{wordData} was not found')
+
+    def slopeSolve(self, map, words):
+
+        mapX, mapY = len(map[0]), len(map)
+        wordCoordinates = []
+
+        for word in words:
+            targetLetter = word[0:1]
+            for y in range(mapY):
+                for x in range(mapX):
+                    if map[y][x][0] == targetLetter:
+                        for slope in self.slopes:
+                            possibleMatch = ''
+                            targetX, targetY = x, y
+                            coords = [[x, y]]
+                            try:
+                                for charNum in range(len(word)):
+                                    possibleMatch += map[targetY][targetX][0]
+                                    targetX += slope[0]
+                                    targetY += slope[1]
+                                    coords.append([targetX , targetY])
+                                if possibleMatch == word:
+                                    wordCoordinates.append([word, slope, x, y])
+                                    for solvedX, solvedY in coords:
+                                        map[solvedY][solvedX][1] = True
+                            except: pass
+        while True:
+            for num in range(len(words)):
+                if not wordCoordinates[num][0] == words[num]:
+                    wordCoordinates.insert(num, words[num])
+                    break
+            break
+        return map, wordCoordinates
+
+    def randomSolve(self, map, words):
+        print('random')
+        print(map, words)
+
+wsm = [
   'ihlqeaooxfmicfc',
   'cbatyvnxjimcllh',
   'mcpgeracgoilarp',
@@ -19,8 +144,10 @@ wsr1 = [
   'wgeococoxffctmr',
   'gnsggwdgnmgozas',
   'aitfrebmemerowh',
-  'osoopnbpapathvu']
-wsr2 = [
+  'osoopnbpapathvu'
+]
+
+wsm = [
   'ALREVIDDCSNBUOXS',
   'LAIVTJFIECAENUWC',
   'LITIGATINGLGSTJR',
@@ -37,83 +164,30 @@ wsr2 = [
   'ALSESSELPARTSUSW'
 ]
 
-wsw1 = ['abuelita', 'alebrije', 'ancestors', 'coco', 'dante', 'dead', 'ernesto', 'familia', 'family', 'fiesta', 'guitar', 'journey', 'mama', 'miguel', 'muertos', 'music', 'papa', 'remember', 'singing', 'skeleton']
+wsw = [
+    'abuelita', 
+    'alebrije', 
+    'ancestors', 
+    'coco', 
+    'dante', 
+    'dead', 
+    'ernesto', 
+    'familia', 
+    'family', 
+    'fiesta', 
+    'guitar', 
+    'journey', 
+    'mama', 
+    'miguel', 
+    'muertos', 
+    'music', 
+    'papa', 
+    'remember', 
+    'singing', 
+    'skeleton'
+]
 
-wsw2 = 'ADORABLE AGED ALLEY BAAS BAIT BEGUN BUXOM CESIUM CLEARED CLUE DIETITIAN DIMWIT DIVER FINE FOETID FRILLS GISMO GOOEY INBUILT INIMITABLE JABS KARATE LEMMA LISLE LITIGATING LIVE MAGISTERIAL METTLE MULTIPLIED OBTUSE OMEGAS OUTSMARTING REDISTRIBUTE SCANTY SCREWDRIVER SLIMMER SNUBBED SPRAT STRANGULATE STRAPLESSES UNSEEMLIEST USELESS VIAL'.split()
+wsw = 'ADORABLE AGED ALLEY BAAS BAIT BEGUN BUXOM CESIUM CLEARED CLUE DIETITIAN DIMWIT DIVER FINE FOETID FRILLS GISMO GOOEY INBUILT INIMITABLE JABS KARATE LEMMA LISLE LITIGATING LIVE MAGISTERIAL METTLE MULTIPLIED OBTUSE OMEGAS OUTSMARTING REDISTRIBUTE SCANTY SCREWDRIVER SLIMMER SNUBBED SPRAT STRANGULATE STRAPLESSES UNSEEMLIEST USELESS VIAL'.split()
 
-# Aged [-1, -1], 10, 1
-# Inbuilt [1, 1], 7, 1
-# Obtuse [1, 1], 5, 4
-# Slimmer [1, -1], 9, 8
-
-class colors:
-  colors = ['\033[95m',
-            '\033[94m',
-            '\033[93m',
-            '\033[92m',
-            '\033[91m',
-            '\033[0m'
-  ]
-
-  HEADER = '\033[95m'
-  OKBLUE = '\033[94m'
-  OKGREEN = '\033[92m'
-  WARNING = '\033[93m'
-  FAIL = '\033[91m'
-  ENDC = '\033[0m'
-
-
-map = []
-rows, words = wsr2, wsw2
-for num in range(len(rows)):
-  map.append(list(rows[num]))
-
-def findWord(word):
-  x, y = [], []
-  target = word[0]
-  possibleMatches = []
-  slopes = [[0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1]]
-  global map
-  for row in map:
-    if target in row:
-      x.append(row.index(target))
-      y.append(map.index(row))
-
-  for num in range(len(x)):
-    for slope in slopes:
-      possibleMatch = ''
-      tx, ty = x[num], y[num]
-      if True:
-        for char in range(len(word)):
-          possibleMatch += map[ty][tx]
-          tx += slope[0]
-          ty += slope[1]
-        if possibleMatch == word:
-          color = colors.colors[random.randint(0, 5)]
-          for blah in range(len(word)):
-            map[y[num] + ty][x[num] + tx] += color
-            map[y[num]]
-            tx += slope[0]
-            ty += slope[1]
-          return slope, x[num], y[num]
-      #except: pass
-
-words = ['ALLEY']
-
-matches = []
-for word in words:
-  if 1==1:
-    s, x, y = findWord(word)
-    s[1] = -s[1]
-    matches.append([word, s, x, y])
-  #except:
-  #  matches.append([word, 'Not Found'])
-
-for row in map:
-  nRow = ' '
-  for char in row:
-    nRow += char + ' '
-  print(nRow)
-print(map)
-for match in matches:
-  print(match)
+solver = wordSeachSolver()
+solver.solve(wsm, wsw)
