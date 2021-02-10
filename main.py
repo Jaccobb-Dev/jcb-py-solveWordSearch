@@ -1,4 +1,4 @@
-import random, os
+import random, os, time
 
 os.system('cls')
 
@@ -6,16 +6,15 @@ class wordSeachSolver:
 
     def __init__(self):
 
-        colors = [
-            '\033[95m',
-            '\033[94m',
-            '\033[93m',
-            '\033[92m',
-            '\033[91m'
+        self.colors = [
+            '\033[95m', # Purple
+            '\033[94m', # Blue
+            '\033[93m', # Yellow
+            '\033[92m', # Green
+            '\033[91m'  # Red
         ]
 
         self.clearColor = '\033[0m'
-        self.selectedColor = random.choice(colors)
 
         self.slopes = [
             [0,  -1],
@@ -63,7 +62,7 @@ class wordSeachSolver:
             splitRow = list(row.lower())
             finalList = []
             for char in splitRow:
-                finalList.append([char, False])
+                finalList.append([char, False, self.clearColor])
             map.append(finalList)
 
         # Ensure Words are Lowercase
@@ -71,18 +70,43 @@ class wordSeachSolver:
             words[words.index(word)] = word.lower()
 
         # Run Selected Algorithm
-        solvedPuzzle, wordCoordinates = algorithmFunction(map, words)
+        clearMap, wordCoordinates = algorithmFunction(map, words)
+        
+        while True:
+          self.printPuzzle(clearMap, wordCoordinates)
+        
+          try:
+            x = int(input("Pick a Word: "))
+          except: continue
+        
+          map = self.highlightWords(map, [words[x]], wordCoordinates)
 
-        # Display Solved Puzzle
-        self.printSolvedPuzzle(solvedPuzzle, wordCoordinates)
+          # Display Solved Puzzle
+          self.printPuzzle(map, wordCoordinates)
+          
+          time.sleep(5)
+      
+    def highlightWords(self, map, words, wordCoordinates):
+      
+      for word in words:
+        selectedColor = random.choice(self.colors)
+        for wordData in wordCoordinates:
+          if word == wordData[0]:
+            word, slope, x, y = wordData
+            break
+        for num in range(len(word)):
+          map[y+(slope[1]*num)][x+(slope[0]*num)][1] = True
+          map[y+(slope[1]*num)][x+(slope[0]*num)][2] = selectedColor
+      
+      return map
 
-    def printSolvedPuzzle(self, solvedPuzzle, wordCoordinates):
+    def printPuzzle(self, solvedPuzzle, wordCoordinates):
 
         for y in range(len(solvedPuzzle)):
             row = ''
             for x in range(len(solvedPuzzle[1])):
                 color = self.clearColor
-                if solvedPuzzle[y][x][1] == True: color = self.selectedColor
+                if solvedPuzzle[y][x][1] == True: color = solvedPuzzle[y][x][2]
                 row += color + solvedPuzzle[y][x][0] + color + '  '
             print(row)
 
@@ -93,6 +117,8 @@ class wordSeachSolver:
             except: print(f'{wordData} was not found')
 
     def slopeSolve(self, map, words):
+      
+        #words = ['aged']
 
         mapX, mapY = len(map[0]), len(map)
         wordCoordinates = []
@@ -105,24 +131,14 @@ class wordSeachSolver:
                         for slope in self.slopes:
                             possibleMatch = ''
                             targetX, targetY = x, y
-                            coords = [[x, y]]
                             try:
                                 for charNum in range(len(word)):
                                     possibleMatch += map[targetY][targetX][0]
                                     targetX += slope[0]
                                     targetY += slope[1]
-                                    coords.append([targetX , targetY])
                                 if possibleMatch == word:
                                     wordCoordinates.append([word, slope, x, y])
-                                    for solvedX, solvedY in coords:
-                                        map[solvedY][solvedX][1] = True
                             except: pass
-        while True:
-            for num in range(len(words)):
-                if not wordCoordinates[num][0] == words[num]:
-                    wordCoordinates.insert(num, words[num])
-                    break
-            break
         return map, wordCoordinates
 
     def randomSolve(self, map, words):
@@ -146,7 +162,7 @@ wsm = [
   'aitfrebmemerowh',
   'osoopnbpapathvu'
 ]
-
+'''
 wsm = [
   'ALREVIDDCSNBUOXS',
   'LAIVTJFIECAENUWC',
@@ -163,7 +179,7 @@ wsm = [
   'DEILPITLUMXLISLE',
   'ALSESSELPARTSUSW'
 ]
-
+'''
 wsw = [
     'abuelita', 
     'alebrije', 
@@ -187,7 +203,7 @@ wsw = [
     'skeleton'
 ]
 
-wsw = 'ADORABLE AGED ALLEY BAAS BAIT BEGUN BUXOM CESIUM CLEARED CLUE DIETITIAN DIMWIT DIVER FINE FOETID FRILLS GISMO GOOEY INBUILT INIMITABLE JABS KARATE LEMMA LISLE LITIGATING LIVE MAGISTERIAL METTLE MULTIPLIED OBTUSE OMEGAS OUTSMARTING REDISTRIBUTE SCANTY SCREWDRIVER SLIMMER SNUBBED SPRAT STRANGULATE STRAPLESSES UNSEEMLIEST USELESS VIAL'.split()
+#wsw = 'ADORABLE AGED ALLEY BAAS BAIT BEGUN BUXOM CESIUM CLEARED CLUE DIETITIAN DIMWIT DIVER FINE FOETID FRILLS GISMO GOOEY INBUILT INIMITABLE JABS KARATE LEMMA LISLE LITIGATING LIVE MAGISTERIAL METTLE MULTIPLIED OBTUSE OMEGAS OUTSMARTING REDISTRIBUTE SCANTY SCREWDRIVER SLIMMER SNUBBED SPRAT STRANGULATE STRAPLESSES UNSEEMLIEST USELESS VIAL'.split()
 
 solver = wordSeachSolver()
 solver.solve(wsm, wsw)
